@@ -25,18 +25,19 @@ export default class App extends React.Component {
         var setdata = (user) => this.setState({ users: user })
         var data = setdata.bind(this);
         getUserFunction(data)
-        tournamentFunction()
+        var dummy = data => console.log('Dummy')
+        tournamentFunction(dummy)
         this.loadingChecker()
         this.refresher()
     }
 
     refresher = () => {
         setInterval(() => {
-            if(global.refresher === 'Yes') {
+            if (global.refresher === 'Yes') {
                 global.refresher = 'No';
                 this.getter();
             }
-        },3000)
+        }, 3000)
     }
 
     loadingChecker = () => {
@@ -76,7 +77,12 @@ export default class App extends React.Component {
                         <Text style={styles.cardamount}>Rs.15000</Text>
                     </View>
                 </View>
-                <Text style={styles.heading}>More options</Text>
+                <View style={{ width: '95%', alignSelf:'center', flexDirection: 'row', justifyContent: 'space-between',alignItems:'center',marginRight:'5%', marginTop:8 }}>
+                    <Text style={styles.heading}>More options</Text>
+                    <TouchableOpacity onPress={this.getter}>
+                    <Text style={{color:'lightgray',fontSize:10}}>Refresh now</Text>
+                    </TouchableOpacity>
+                </View>
                 <View style={styles.bottomcard}>
                     <TouchableOpacity onPress={() => this.props.navigation.navigate('Ongoing')} elevation={3} style={styles.bottombutton}>
                         <Icon name="dashboard" color="#ee5253" size={35} />

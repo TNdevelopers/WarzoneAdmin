@@ -1,4 +1,4 @@
-function getUserFunction() {
+function getUserFunction(data) {
     fetch('http://tndevelopersbackend.000webhostapp.com/warzone/admintournament.php',{
         method:'GET',
         headers: {
@@ -9,9 +9,10 @@ function getUserFunction() {
     .then(response => response.json())
     .then(responseJson => {
         global.tournament = responseJson;
-        global.ongoing = responseJson.filter(x => x.status === 'Active')
+        global.ongoing = responseJson.filter(x => x.status === 'Ongoing')
         global.upcoming = responseJson.filter(x => x.status === 'Active')
-        global.finished = responseJson.filter(x => x.status === 'Active')
+        global.finished = responseJson.filter(x => x.status === 'Finished')
+        data(responseJson)
     })
     .catch(error => console.log(error))
 }

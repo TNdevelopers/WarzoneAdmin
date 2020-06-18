@@ -22,36 +22,65 @@ export default class App extends React.Component {
     }
 
     removeFunction = (data) => {
-        this.setState({loading:true})
-         fetch('http://tndevelopersbackend.000webhostapp.com/warzone/admintournamentdelete.php',{
-             method:'POST',
-             headers: {
-                 Accept: 'application/json',
-                 'Content-Type': 'application/json'
-             },
-             body: JSON.stringify({
-                 id: data
-             })
-         })
-         .then(response => response.json())
-         .then(responseJson => {
-             console.log(responseJson)
-             if(responseJson === 'ok') {
-                 alert('User removed...')
-                 var setdata = (user) => this.setState({loading:false})
-                 var data = setdata.bind(this);
-                 tournamentFunction(data)
-             }else {
-                 alert('Server error.')
-                 var setdata = (user) => this.setState({loading:false})
-             }
-         })
-         .catch(error => console.log(error))
-     }
+        this.setState({ loading: true })
+        fetch('http://tndevelopersbackend.000webhostapp.com/warzone/admintournamentdelete.php', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: data
+            })
+        })
+            .then(response => response.json())
+            .then(responseJson => {
+                console.log(responseJson)
+                if (responseJson === 'ok') {
+                    alert('User removed...')
+                    var setdata = (user) => this.setState({ loading: false })
+                    var data = setdata.bind(this);
+                    tournamentFunction(data)
+                } else {
+                    alert('Server error.')
+                    var setdata = (user) => this.setState({ loading: false })
+                }
+            })
+            .catch(error => console.log(error))
+    }
+
+    golive = (data) => {
+        this.setState({ loading: true })
+        fetch('http://tndevelopersbackend.000webhostapp.com/warzone/golive.php', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: data,
+                status: 'Ongoing'
+            })
+        })
+            .then(response => response.json())
+            .then(responseJson => {
+                console.log(responseJson)
+                if (responseJson === 'ok') {
+                    alert('Moved to live now')
+                    var setdata = (user) => this.setState({ loading: false })
+                    var data = setdata.bind(this);
+                    tournamentFunction(data)
+                } else {
+                    alert('Server error.')
+                    var setdata = (user) => this.setState({ loading: false })
+                }
+            })
+            .catch(error => console.log(error))
+    }
 
     render() {
-        if(this.state.loading === true) {
-            return(
+        if (this.state.loading === true) {
+            return (
                 <View style={{ flex: 1, justifyContent: 'center' }}>
                     <ActivityIndicator color='black' size='large' />
                 </View>
@@ -65,7 +94,7 @@ export default class App extends React.Component {
                     showsHorizontalScrollIndicator={false}
                     keyExtractor={(item, index) => index.toString()}
                     renderItem={({ item }) => (
-                        <View style={{ flex: 1, marginBottom: 30,marginTop:10 }}>
+                        <View style={{ flex: 1, marginBottom: 30, marginTop: 10 }}>
                             <View elevation={3} style={styles.cardContainer}>
                                 <Image resizeMode='contain' source={{ uri: item.image }} style={{ width: '100%', height: 200 }} />
                                 <View style={styles.descriptionContainer}>
@@ -98,10 +127,16 @@ export default class App extends React.Component {
                                         <Text style={styles.cardamount}>{item.time}</Text>
                                     </View>
                                 </View>
-                                <TouchableOpacity onPress={this.removeFunction.bind(this,item.id)} style={styles.bottombuttonadd}>
-                                    <Icon name="edit" color="#FFFF" size={20} />
-                                    <Text style={styles.cardtext}> Remove</Text>
-                                </TouchableOpacity>
+                                <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                                    <TouchableOpacity onPress={this.removeFunction.bind(this, item.id)} style={styles.bottombuttonadd}>
+                                        <Icon name="edit" color="#FFFF" size={20} />
+                                        <Text style={styles.cardtext}> Remove</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={this.golive.bind(this, item.id)} style={styles.bottombuttonadd}>
+                                        <Icon name="building" color="#FFFF" size={20} />
+                                        <Text style={styles.cardtext}> Go live</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         </View>
                     )}
@@ -177,7 +212,7 @@ const styles = StyleSheet.create({
         color: '#576574'
     },
     bottombuttonadd: {
-        width: '50%',
+        width: '45%',
         height: 40,
         backgroundColor: Theme.PRIMARY,
         alignItems: 'center',
@@ -186,5 +221,6 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
+        marginHorizontal:3
     }
 })

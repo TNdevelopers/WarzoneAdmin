@@ -18,6 +18,35 @@ export default class App extends React.Component {
         isLoadingComplete: false,
     }
 
+    finish = (data) => {
+        this.setState({ loading: true })
+        fetch('http://tndevelopersbackend.000webhostapp.com/warzone/golive.php', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: data,
+                status: 'Finished'
+            })
+        })
+            .then(response => response.json())
+            .then(responseJson => {
+                console.log(responseJson)
+                if (responseJson === 'ok') {
+                    alert('Moved to live now')
+                    var setdata = (user) => this.setState({ loading: false })
+                    var data = setdata.bind(this);
+                    tournamentFunction(data)
+                } else {
+                    alert('Server error.')
+                    var setdata = (user) => this.setState({ loading: false })
+                }
+            })
+            .catch(error => console.log(error))
+    }
+
     render() {
         return (
             <View style={styles.container}>
@@ -59,6 +88,11 @@ export default class App extends React.Component {
                                         <Text style={styles.cardamount}>{item.time}</Text>
                                     </View>
                                 </View>
+
+                            <TouchableOpacity style={styles.bottombuttonadd}>
+                                        <Icon name="edit" color="#FFFF" size={20} />
+                                        <Text style={styles.cardtext}> Finish</Text>
+                                    </TouchableOpacity>
                             </View>
                         </View>
                     )}
@@ -143,7 +177,5 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-        position: 'absolute',
-        bottom: 0
     }
 })
