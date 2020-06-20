@@ -17,33 +17,50 @@ export default class App extends React.Component {
     state = {
         isLoadingComplete: false,
         maindata: this.props.navigation.state.params.result,
-        killsloader: false
+        killsloader: false,
+
+        total: 0
     }
 
     finish = (data) => {
-        this.setState({ loading: true })
-        fetch('http://tndevelopersbackend.000webhostapp.com/warzone/players.php', {
+        console.log(data)
+        fetch('http://tndevelopersbackend.000webhostapp.com/warzone/matchupdate.php', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                mid: data,
+                data: data,
             })
         })
             .then(response => response.json())
             .then(responseJson => {
                 console.log(responseJson)
-                this.props.navigation.navigate('Updateplayers')
+                global.refresher = 'Yes';
+                this.props.navigation.navigate('Home')
             })
             .catch(error => console.log(error))
     }
 
+    calculatefunction = () => {
+        var result  = this.state.maindata;
+        var killamount = this.props.navigation.state.params.killamount;
+        var dummynum = this.state.total;
+        for (var i = 0; i < result.length; i++) {
+             dummynum += parseInt(result[i].kills * killamount);
+        }
+        console.log(dummynum)
+        this.setState({
+            total: dummynum
+        })
+    }
+
+
     render() {
         var mainData = this.props.navigation.state.params.result;
         var killamount = this.props.navigation.state.params.killamount;
-        
+
         return (
             <View style={styles.container}>
                 <FlatList
@@ -63,20 +80,20 @@ export default class App extends React.Component {
                                         placeholder="Kills"
                                         onChangeText={data => {
                                             if (data) {
-                                                this.setState({killsloader:true})
+                                                this.setState({ killsloader: true })
                                                 var mainData1 = mainData;
                                                 for (var i = 0; i < mainData1.length; i++) {
                                                     if (item.id === mainData1[i].id) {
                                                         mainData1[i].kills = data;
                                                         console.log(mainData1[i].kills)
                                                         this.setState({
-                                                            mainData: mainData,
-                                                            killsloader:false
+                                                            mainData: mainData1,
+                                                            killsloader: false
                                                         })
                                                     }
                                                 }
                                                 this.setState({
-                                                    mainData:mainData
+                                                    mainData: mainData
                                                 })
                                                 console.log(mainData1)
                                             }
@@ -89,10 +106,27 @@ export default class App extends React.Component {
                         </View>
                     )}
                 />
-                <TouchableOpacity style={styles.bottombuttonadd}>
-                    <Icon name="edit" color="#FFFF" size={20} />
-                    <Text style={styles.cardtext}>Update</Text>
-                </TouchableOpacity>
+                <Text style={{fontSize: 25,fontWeight:'bold',textAlign:'center'}}>Total: Rs.{this.state.total}</Text>
+                <View style={{ flexDirection: 'row',alignSelf:'center' }}>
+                    <TouchableOpacity onPress={this.calculatefunction} style={styles.bottombuttonadd}>
+                        <Icon name="edit" color="#FFFF" size={20} />
+                        <Text style={styles.cardtext}>Calculate</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={()=> {
+                        var mainData1 = this.state.maindata;
+                        var result = [];
+                        result.length = 0;
+                        for (var i = 0; i < mainData1.length; i++) {
+                            if(mainData1[i].kills > 0) {
+                                result.push({kills: mainData1[i].kills, id: mainData1[i].id, mid: mainData1[i].mid, cid: mainData1[i].cid, amount: parseInt(mainData1[i].kills * killamount)})
+                            }
+                        }
+                        this.finish(result);
+                    }} style={styles.bottombuttonadd}>
+                        <Icon name="edit" color="#FFFF" size={20} />
+                        <Text style={styles.cardtext}>Update</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         );
     }
@@ -122,7 +156,7 @@ const styles = StyleSheet.create({
         fontSize: 20
     },
     amountContainer: {
-        width: '33%',
+        width: '60%',
     },
     cardheading: {
         fontSize: 14,
@@ -161,7 +195,7 @@ const styles = StyleSheet.create({
         color: '#576574'
     },
     bottombuttonadd: {
-        width: '50%',
+        width: '45%',
         height: 40,
         backgroundColor: Theme.PRIMARY,
         alignItems: 'center',
@@ -170,5 +204,6 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
+        marginHorizontal:5
     }
 })

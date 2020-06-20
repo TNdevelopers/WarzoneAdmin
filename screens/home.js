@@ -1,10 +1,12 @@
 import React from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, AsyncStorage, StatusBar, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, ScrollView, StatusBar, ActivityIndicator } from 'react-native';
 import { createStaackNavigator, ThemeColors } from 'react-navigation';
 import Theme from '../assets/theme'
 import Icon from 'react-native-vector-icons/FontAwesome';
 import getUserFunction from '../functions/user';
 import tournamentFunction from '../functions/tournament';
+import transactions from '../functions/transactions';
+import payout from '../functions/payout';
 
 export default class App extends React.Component {
     static navigationOptions = {
@@ -14,7 +16,8 @@ export default class App extends React.Component {
     state = {
         isLoadingComplete: false,
         users: null,
-        loading: true
+        loading: true,
+        pendingData: null
     }
 
     componentDidMount() {
@@ -27,6 +30,8 @@ export default class App extends React.Component {
         getUserFunction(data)
         var dummy = data => console.log('Dummy')
         tournamentFunction(dummy)
+        transactions()
+        payout();
         this.loadingChecker()
         this.refresher()
     }
@@ -37,7 +42,38 @@ export default class App extends React.Component {
                 global.refresher = 'No';
                 this.getter();
             }
+            this.getpendingdata()
         }, 3000)
+    }
+
+    getpendingdata = () => {
+        fetch('http://tndevelopersbackend.000webhostapp.com/warzone/payoutpending.php', {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+        })
+            .then(response => response.json())
+            .then(responseJson => {
+                if (responseJson.length > 0) {
+                    var cdata = global.users;
+                    var transactiondata = global.transaction;
+                    var dummydata = [];
+                    dummydata.length = 0;
+                    for (var i = 0; i < responseJson.length; i++) {
+                        var data = cdata.filter(x => x.id === responseJson[i].cid);
+                        var transdata = transactiondata.filter(x => x.cid === responseJson[i].cid);
+                        console.log(transdata)
+                        var translength = parseInt(transdata.length - 1);
+                        dummydata.push({ name: data[0].name, mobile: data[0].mobile, amount: responseJson[i].amount, pid: responseJson[i].id, transid: transdata[translength].transaction_id, reqid: transdata[translength].request_id, cid: responseJson[i].cid, balance:  responseJson[i].balance})
+                    }
+                    this.setState({
+                        pendingData: dummydata
+                    })
+                }
+            })
+            .catch(error => console.log(error))
     }
 
     loadingChecker = () => {
@@ -62,25 +98,32 @@ export default class App extends React.Component {
         return (
             <View style={styles.container}>
                 <StatusBar backgroundColor={"#FFFF"} barStyle="dark-content" />
-                <Text style={styles.heading}>Admin Dashboard</Text>
+                <View style={{ width: '95%', alignSelf: 'center', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginRight: '5%', marginTop: 8 }}>
+                    <Text style={styles.heading}>Admin Dashboard</Text>
+                    <TouchableOpacity onPress={() => this.props.navigation.navigate('Payoutpage',{ data: this.state.pendingData })}>
+                        {this.state.pendingData != null ? (
+                            <Text style={{ color: 'green', fontSize: 10 }}>New Payment Request</Text>
+                        ) : null}
+                    </TouchableOpacity>
+                </View>
                 <View elevation={3} style={styles.cardContainer}>
                     <View style={styles.amountContainer}>
                         <Text style={styles.cardheading}>Total Income</Text>
-                        <Text style={[styles.cardamount, { color: Theme.PRIMARY }]}>Rs.25000</Text>
+                        <Text style={[styles.cardamount, { color: Theme.PRIMARY }]}>Rs.{global.total}</Text>
                     </View>
                     <View style={styles.amountContainer}>
                         <Text style={styles.cardheading}>Total Expense</Text>
-                        <Text style={styles.cardamount}>Rs.10000</Text>
+                        <Text style={styles.cardamount}>Rs.{global.paytotal}</Text>
                     </View>
                     <View style={styles.amountContainer}>
                         <Text style={styles.cardheading}>Total Balance</Text>
-                        <Text style={styles.cardamount}>Rs.15000</Text>
+                        <Text style={styles.cardamount}>Rs.{parseInt(global.total) - parseInt(global.paytotal)}</Text>
                     </View>
                 </View>
-                <View style={{ width: '95%', alignSelf:'center', flexDirection: 'row', justifyContent: 'space-between',alignItems:'center',marginRight:'5%', marginTop:8 }}>
+                <View style={{ width: '95%', alignSelf: 'center', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginRight: '5%', marginTop: 8 }}>
                     <Text style={styles.heading}>More options</Text>
                     <TouchableOpacity onPress={this.getter}>
-                    <Text style={{color:'lightgray',fontSize:10}}>Refresh now</Text>
+                        <Text style={{ color: 'lightgray', fontSize: 10 }}>Refresh now</Text>
                     </TouchableOpacity>
                 </View>
                 <View style={styles.bottomcard}>
@@ -126,7 +169,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         paddingTop: 15,
-        paddingBottom: 5
     },
     cardContainer: {
         width: '90%',
@@ -201,5 +243,14 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 20,
         position: 'absolute',
         bottom: 0
-    }
+    },
+    GridViewBlockStyle: {
+        width: '90%',
+        margin: 5,
+        backgroundColor: '#ffffff',
+        elevation: 5,
+        paddingBottom: 10,
+        borderRadius: 10,
+        alignSelf: 'center'
+    },
 })

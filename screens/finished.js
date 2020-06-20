@@ -17,6 +17,7 @@ export default class App extends React.Component {
     }, { title: 'oii' }]
     state = {
         isLoadingComplete: false,
+        loading:false
     }
 
     finish = (data, per_kill) => {
@@ -37,10 +38,11 @@ export default class App extends React.Component {
                 this.props.navigation.navigate('Updateplayers',{result:responseJson,killamount: per_kill})
             })
             .catch(error => console.log(error))
-    }
+    } 
  
     render() {
-        var mainData = global.finished.filter(x => x.date < moment().format('YYYY-MM-DD'))
+        
+        var mainData = global.finished.filter(x => x.status === 'Finished')
         return (
             <View style={styles.container}>
                 <FlatList
@@ -81,10 +83,14 @@ export default class App extends React.Component {
                                         <Text style={styles.cardamount}>{item.time}</Text>
                                     </View>
                                 </View>
+                                {item.playerstatus === 'COMPLETED' ? (
+                                    null
+                                ) : (
                                 <TouchableOpacity onPress={this.finish.bind(this, item.id,item.per_kill)} style={styles.bottombuttonadd}>
                                     <Icon name="edit" color="#FFFF" size={20} />
                                     <Text style={styles.cardtext}>Update</Text>
                                 </TouchableOpacity>
+                                 ) } 
                             </View>
                         </View>
                     )}
