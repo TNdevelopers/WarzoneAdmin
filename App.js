@@ -8,6 +8,7 @@ import Finished from './screens/finished';
 import Users from './screens/users';
 import Newgame from './screens/newgame';
 import EditGame from './screens/editgame';
+import Updateplayers from './screens/updateplayers';
 
 const Navigator = createStackNavigator({
   Home: {screen: Home},
@@ -17,6 +18,7 @@ const Navigator = createStackNavigator({
   Users: {screen: Users},
   Newgame: {screen: Newgame},
   EditGame: {screen: EditGame},
+  Updateplayers: {screen: Updateplayers},
 })
 
 export default createAppContainer(Navigator);

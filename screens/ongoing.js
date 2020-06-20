@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, AsyncStorage, Image, FlatList } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, ActivityIndicator, Image, FlatList } from 'react-native';
 import { createStaackNavigator, ThemeColors } from 'react-navigation';
 import Theme from '../assets/theme'
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -16,6 +16,7 @@ export default class App extends React.Component {
     }, { title: 'oii' }]
     state = {
         isLoadingComplete: false,
+        loading:false
     }
 
     finish = (data) => {
@@ -48,6 +49,13 @@ export default class App extends React.Component {
     }
 
     render() {
+        if(this.state.loading) {
+            return(
+                <View style={{ flex: 1, justifyContent: 'center' }}>
+                    <ActivityIndicator color='black' size='large' />
+                </View>
+            )
+        }
         return (
             <View style={styles.container}>
                 <FlatList
@@ -55,7 +63,7 @@ export default class App extends React.Component {
                     showsHorizontalScrollIndicator={false}
                     keyExtractor={(item, index) => index.toString()}
                     renderItem={({ item }) => (
-                        <View style={{ flex: 1, marginBottom: 30,marginTop:10 }}>
+                        <View style={{ flex: 1, marginBottom: 30, marginTop: 10 }}>
                             <View elevation={3} style={styles.cardContainer}>
                                 <Image resizeMode='contain' source={{ uri: item.image }} style={{ width: '100%', height: 200 }} />
                                 <View style={styles.descriptionContainer}>
@@ -77,7 +85,6 @@ export default class App extends React.Component {
                                     </View>
                                 </View>
 
-
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '90%', height: 75, marginBottom: 5 }}>
                                     <View style={styles.amountContainer}>
                                         <Text style={styles.cardheading}>Date</Text>
@@ -89,10 +96,10 @@ export default class App extends React.Component {
                                     </View>
                                 </View>
 
-                            <TouchableOpacity style={styles.bottombuttonadd}>
-                                        <Icon name="edit" color="#FFFF" size={20} />
-                                        <Text style={styles.cardtext}> Finish</Text>
-                                    </TouchableOpacity>
+                                <TouchableOpacity onPress={this.finish.bind(this, item.id)} style={styles.bottombuttonadd}>
+                                    <Icon name="edit" color="#FFFF" size={20} />
+                                    <Text style={styles.cardtext}> Finish</Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
                     )}
