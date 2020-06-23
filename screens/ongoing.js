@@ -3,7 +3,7 @@ import { View, StyleSheet, Text, TouchableOpacity, ActivityIndicator, Image, Fla
 import { createStaackNavigator, ThemeColors } from 'react-navigation';
 import Theme from '../assets/theme'
 import Icon from 'react-native-vector-icons/FontAwesome';
-import getUserFunction from '../functions/user';
+import tournamentFunction from '../functions/tournament';
 
 export default class App extends React.Component {
     static navigationOptions = {

@@ -25,25 +25,25 @@ export default class App extends React.Component {
     }
 
     getter = () => {
-        var setdata = (user) => this.setState({ users: user })
-        var data = setdata.bind(this);
-        getUserFunction(data)
         var dummy = data => console.log('Dummy')
         tournamentFunction(dummy)
         transactions()
         payout();
+        var setdata = (user) => this.setState({ users: user })
+        var data = setdata.bind(this);
+        getUserFunction(data)
         this.loadingChecker()
         this.refresher()
     }
 
     refresher = () => {
         setInterval(() => {
-            if (global.refresher === 'Yes') {
+            if(global.refresher === 'Yes') {
                 global.refresher = 'No';
                 this.getter();
             }
             this.getpendingdata()
-        }, 3000)
+        }, 5000)
     }
 
     getpendingdata = () => {
@@ -66,7 +66,7 @@ export default class App extends React.Component {
                         var transdata = transactiondata.filter(x => x.cid === responseJson[i].cid);
                         console.log(transdata)
                         var translength = parseInt(transdata.length - 1);
-                        dummydata.push({ name: data[0].name, mobile: data[0].mobile, amount: responseJson[i].amount, pid: responseJson[i].id, transid: transdata[translength].transaction_id, reqid: transdata[translength].request_id, cid: responseJson[i].cid, balance:  responseJson[i].balance})
+                        dummydata.push({ name: data[0].name, mobile: data[0].mobile, amount: responseJson[i].amount, pid: responseJson[i].id, transid: transdata[translength].transaction_id, reqid: transdata[translength].request_id, cid: responseJson[i].cid, balance: responseJson[i].balance })
                     }
                     this.setState({
                         pendingData: dummydata
@@ -80,7 +80,9 @@ export default class App extends React.Component {
         var data = global.users;
         setTimeout(() => {
             if (data) {
+                console.log('runnig')
                 this.setState({ loading: false })
+                return 0;
             } else {
                 this.loadingChecker()
             }
@@ -100,7 +102,7 @@ export default class App extends React.Component {
                 <StatusBar backgroundColor={"#FFFF"} barStyle="dark-content" />
                 <View style={{ width: '95%', alignSelf: 'center', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginRight: '5%', marginTop: 8 }}>
                     <Text style={styles.heading}>Admin Dashboard</Text>
-                    <TouchableOpacity onPress={() => this.props.navigation.navigate('Payoutpage',{ data: this.state.pendingData })}>
+                    <TouchableOpacity onPress={() => this.props.navigation.navigate('Payoutpage', { data: this.state.pendingData })}>
                         {this.state.pendingData != null ? (
                             <Text style={{ color: 'green', fontSize: 10 }}>New Payment Request</Text>
                         ) : null}
