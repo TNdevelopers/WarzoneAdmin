@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, AsyncStorage, ScrollView, TextInput } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Switch, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { createStaackNavigator, ThemeColors } from 'react-navigation';
 import Theme from '../assets/theme'
 import Icon from 'react-native-vector-icons/FontAwesome';
 import getUserFunction from '../functions/user';
 import DatePicker from 'react-native-datepicker';
+import TimePicker from 'react-native-simple-time-picker';
 
 export default class App extends React.Component {
     static navigationOptions = {
@@ -17,6 +18,7 @@ export default class App extends React.Component {
         this.state = {
             search: null,
             loading: false,
+            buttonloader: false,
 
             title: null,
             description: null,
@@ -28,7 +30,9 @@ export default class App extends React.Component {
             players: null,
             image: null,
             perkill: null,
-            type: null
+            type: null,
+            am: 'am',
+            amvalue: false
         }
     }
 
@@ -38,7 +42,7 @@ export default class App extends React.Component {
         }
         else if (this.state.description === null) {
             alert('Please enter description')
-        }else if (this.state.date === null) {
+        } else if (this.state.date === null) {
             alert('Please enter date')
         } else if (this.state.time === null) {
             alert('Please enter time')
@@ -56,9 +60,10 @@ export default class App extends React.Component {
             alert('Please enter image link')
         } else if (this.state.per_kill === null) {
             alert('Please enter kill')
-        } 
+        }
         else {
-            fetch('http://tndevelopersbackend.000webhostapp.com/warzone/admintournamentadd.php', {
+            this.setState({buttonloader:true})
+            fetch('https://fruitionsoft.tech/warzone/admintournamentadd.php', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
@@ -82,11 +87,13 @@ export default class App extends React.Component {
                 .then(response => response.json())
                 .then(responseJson => {
                     console.log(responseJson)
-                    if(responseJson === 'ok') {
+                    if (responseJson === 'ok') {
+                        this.setState({buttonloader:false})
                         alert('Match created successfully.');
                         global.refresher = 'Yes';
                         this.props.navigation.goBack(null);
-                    }else {
+                    } else {
+                        this.setState({buttonloader:false})
                         alert('oops! something went wrong')
                     }
                 })
@@ -126,28 +133,34 @@ export default class App extends React.Component {
                     }}
                     onDateChange={(date) => { this.setState({ date: date }) }}
                 />
-                <DatePicker
-                    style={styles.input}
-                    date={this.state.time}
-                    mode="time"
-                    placeholder="Tournament time"
-                    format="HH:MM"
-                    confirmBtnText="Confirm"
-                    cancelBtnText="Cancel"
-                    customStyles={{
-                        dateIcon: {
-                            position: 'absolute',
-                            left: 0,
-                            top: 4,
-                            marginLeft: 0
-                        },
-                        dateInput: {
-                            marginLeft: 36
-                        }
-                        // ... You can check the source to find the other keys.
-                    }}
-                    onDateChange={(date) => { this.setState({ time: date }) }}
-                />
+                <View style={{ paddingVertical: 5, width: '90%', alignSelf: 'center' }}>
+                    <Text>Select {this.state.am}</Text>
+                    <Switch
+                        onValueChange={() => {
+                            if (this.state.am === 'am') {
+                                this.setState({
+                                    am: 'pm',
+                                    amvalue: !this.state.amvalue
+                                })
+                            } else {
+                                this.setState({
+                                    am: 'am',
+                                    amvalue: !this.state.amvalue
+                                })
+                            }
+                        }}
+                        value={this.state.amvalue} />
+                    <TimePicker
+                        selectedHours="00"
+                        //initial Hourse value
+                        selectedMinutes="00"
+                        //initial Minutes value
+                        onChange={(hours, minutes) => this.setState({
+                            time: hours + ':' + minutes + ' ' + this.state.am
+                        })}
+                    />
+                </View>
+
                 <TextInput style={styles.input}
                     placeholder="Map"
                     onChangeText={data => this.setState({ map: data })} />
@@ -173,9 +186,15 @@ export default class App extends React.Component {
                     placeholder="Amount per kill"
                     keyboardType='decimal-pad'
                     onChangeText={data => this.setState({ perkill: data })} />
-                <TouchableOpacity onPress={this.submitFunction} style={styles.bottombuttonadd}>
-                    <Text style={styles.cardtext}>Submit</Text>
-                </TouchableOpacity>
+                {this.state.buttonloader === true ? (
+                    <TouchableOpacity style={styles.bottombuttonadd}>
+                        <ActivityIndicator color="#FFFF" size="small" />
+                    </TouchableOpacity>
+                ) : (
+                        <TouchableOpacity onPress={this.submitFunction} style={styles.bottombuttonadd}>
+                            <Text style={styles.cardtext}>Submit</Text>
+                        </TouchableOpacity>
+                    )}
             </ScrollView>
         );
     }

@@ -21,7 +21,7 @@ export default class App extends React.Component {
 
     finish = (data) => {
         this.setState({ loading: true })
-        fetch('http://tndevelopersbackend.000webhostapp.com/warzone/golive.php', {
+        fetch('https://fruitionsoft.tech/warzone/golive.php', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -36,7 +36,7 @@ export default class App extends React.Component {
             .then(responseJson => {
                 console.log(responseJson)
                 if (responseJson === 'ok') {
-                    alert('Moved to live now')
+                    alert('Moved to finished now')
                     var setdata = (user) => this.setState({ loading: false })
                     var data = setdata.bind(this);
                     tournamentFunction(data)

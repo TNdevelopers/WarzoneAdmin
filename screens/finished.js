@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, AsyncStorage, Image, FlatList } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, ActivityIndicator, Image, FlatList, Alert } from 'react-native';
 import { createStaackNavigator, ThemeColors } from 'react-navigation';
 import Theme from '../assets/theme'
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -12,17 +12,59 @@ export default class App extends React.Component {
         title: "Finished game",
     }
 
-    familyData = [{
-        title: 'Hello'
-    }, { title: 'oii' }]
+
     state = {
         isLoadingComplete: false,
-        loading:false
+        loading: false,
+        pendingData: [],
+        youtube: null,
+        playerstatus: null
+    }
+
+    componentDidMount() {
+        this.refresher();
+    }
+
+    refresher = () => {
+        setInterval(() => {
+            this.getpendingdata()
+        }, 5000)
+    }
+
+    getpendingdata = () => {
+        fetch('https://fruitionsoft.tech/warzone/payoutpending.php', {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+        })
+            .then(response => response.json())
+            .then(responseJson => {
+                if (responseJson.length > 0) { 
+                    var cdata = global.users;
+                    var transactiondata = global.transaction;
+                    var dummydata = [];
+                    dummydata.length = 0;
+                    for (var i = 0; i < responseJson.length; i++) {
+                        var data = cdata.filter(x => x.id === responseJson[i].cid);
+                        var transdata = transactiondata.filter(x => x.cid === responseJson[i].cid);
+                        console.log(data)
+                        var translength = parseInt(transdata.length - 1);
+                        // dummydata.push({ name: data[0].name, mobile: data[0].mobile, amount: responseJson[i].amount, pid: responseJson[i].id, transid: transdata[translength].transaction_id, reqid: transdata[translength].request_id, cid: responseJson[i].cid, balance: responseJson[i].balance })
+                        dummydata.push({ name: data[0].name, mobile: data[0].mobile, amount: responseJson[i].amount, pid: responseJson[i].id, cid: responseJson[i].cid, balance: responseJson[i].balance,date: responseJson[i].date, payid: responseJson[i].payid, type: responseJson[i].type })
+                    }
+                    this.setState({
+                        pendingData: responseJson
+                    })
+                }
+            })
+            .catch(error => console.log(error))
     }
 
     finish = (data, per_kill) => {
         this.setState({ loading: true })
-        fetch('http://tndevelopersbackend.000webhostapp.com/warzone/players.php', {
+        fetch('https://fruitionsoft.tech/warzone/players.php', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -35,16 +77,65 @@ export default class App extends React.Component {
             .then(response => response.json())
             .then(responseJson => {
                 console.log(responseJson)
-                this.props.navigation.navigate('Updateplayers',{result:responseJson,killamount: per_kill})
+                this.props.navigation.navigate('Updateplayers', { result: responseJson, killamount: per_kill })
             })
             .catch(error => console.log(error))
-    } 
- 
+    }
+
+    deletematch = (id) => {
+        Alert.alert('Warzone', 'Are you sure want to delete this match.', [
+            { text: 'Yes', onPress: () => {this.deleteFunction(id)} },
+            { text: 'Cancel' }
+        ])
+    }
+
+    deleteFunction = (id) => {
+        this.setState({loading:true})
+        console.log('Entered')
+        fetch('https://fruitionsoft.tech/warzone/deletematch.php', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: id,
+            })
+        })
+            .then(response => response.json())
+            .then(responseJson => {
+                console.log(responseJson)
+                if(responseJson === 'success') {
+                    this.modifier(id)
+                }else {
+                    this.setState({loading:false})
+                    alert('oops! something went wrong. please try again later..')
+                }
+            })
+            .catch(error => console.log(error))
+    }
+
+    modifier = (id) => {
+        var getdata = global.finished.filter(x => x.status === 'Finished');
+        var result = getdata.filter(x => x.id != id)
+        global.finished = result;
+        this.setState({loading:false})
+    }
+
     render() {
-        
+        if (this.state.loading === true) {
+            return (
+                <View style={{ flex: 1, justifyContent: 'center' }}>
+                    <ActivityIndicator color='black' size='large' />
+                </View>
+            )
+        }
         var mainData = global.finished.filter(x => x.status === 'Finished')
         return (
             <View style={styles.container}>
+                <TouchableOpacity style={{ width: '90%', height: 40, borderRadius: 5, backgroundColor: 'yellow', alignItems: 'center', justifyContent: 'center', alignSelf: 'center', margin: 5 }} onPress={() => this.props.navigation.navigate('Payoutpage', { data: this.state.pendingData })}>
+                    <Text style={{ fontSize: 16 }}>New Payment Request({this.state.pendingData.length})</Text>
+                </TouchableOpacity>
                 <FlatList
                     data={mainData}
                     showsHorizontalScrollIndicator={false}
@@ -86,12 +177,16 @@ export default class App extends React.Component {
                                 {item.playerstatus === 'COMPLETED' ? (
                                     null
                                 ) : (
-                                <TouchableOpacity onPress={this.finish.bind(this, item.id,item.per_kill)} style={styles.bottombuttonadd}>
-                                    <Icon name="edit" color="#FFFF" size={20} />
-                                    <Text style={styles.cardtext}>Update</Text>
+                                        <TouchableOpacity onPress={this.finish.bind(this, item.id, item.per_kill)} style={styles.bottombuttonadd}>
+                                            <Icon name="edit" color="#FFFF" size={20} />
+                                            <Text style={styles.cardtext}>Update</Text>
+                                        </TouchableOpacity>
+                                    )} 
+                                <TouchableOpacity onPress={this.deletematch.bind(this, item.id)} style={{ padding: 8, alignItems: 'center', justifyContent: 'center', position: 'absolute', right: 10, top:10 }}>
+                                    <Icon name="trash" color="#FFFF" size={30} />
                                 </TouchableOpacity>
-                                 ) } 
                             </View>
+
                         </View>
                     )}
                 />

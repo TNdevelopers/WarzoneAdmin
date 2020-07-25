@@ -26,7 +26,7 @@ export default class App extends React.Component {
 
     removeFunction = (data) => {
         this.setState({ loading: true })
-        fetch('http://tndevelopersbackend.000webhostapp.com/warzone/adminuserdelete.php', {
+        fetch('https://fruitionsoft.tech/warzone/adminuserdelete.php', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -55,9 +55,9 @@ export default class App extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                <TextInput style={styles.input}
+                {/* <TextInput style={styles.input}
                     placeholder="Search by name"
-                    onChangeText={data => this.setState({ search: data })} />
+                    onChangeText={data => this.setState({ search: data })} /> */}
                 <FlatList
                     data={global.users}
                     showsHorizontalScrollIndicator={false}

@@ -1,5 +1,5 @@
 function getUserFunction(data) {
-    fetch('http://tndevelopersbackend.000webhostapp.com/warzone/admintournament.php',{
+    fetch('http://fruitionsoft.tech/warzone/admintournament.php',{
         method:'GET',
         headers: {
             Accept: 'application/json',

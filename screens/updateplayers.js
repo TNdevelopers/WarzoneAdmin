@@ -18,13 +18,13 @@ export default class App extends React.Component {
         isLoadingComplete: false,
         maindata: this.props.navigation.state.params.result,
         killsloader: false,
-
+        youtube: 'NONE',
         total: 0
     }
 
     finish = (data) => {
         console.log(data)
-        fetch('http://tndevelopersbackend.000webhostapp.com/warzone/matchupdate.php', {
+        fetch('https://fruitionsoft.tech/warzone/matchupdate.php', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -32,6 +32,7 @@ export default class App extends React.Component {
             },
             body: JSON.stringify({
                 data: data,
+                youtube: this.state.youtube
             })
         })
             .then(response => response.json())
@@ -44,11 +45,11 @@ export default class App extends React.Component {
     }
 
     calculatefunction = () => {
-        var result  = this.state.maindata;
+        var result = this.state.maindata;
         var killamount = this.props.navigation.state.params.killamount;
         var dummynum = this.state.total;
         for (var i = 0; i < result.length; i++) {
-             dummynum += parseInt(result[i].kills * killamount);
+            dummynum += parseInt(result[i].kills * killamount);
         }
         console.log(dummynum)
         this.setState({
@@ -85,7 +86,32 @@ export default class App extends React.Component {
                                                 for (var i = 0; i < mainData1.length; i++) {
                                                     if (item.id === mainData1[i].id) {
                                                         mainData1[i].kills = data;
-                                                        console.log(mainData1[i].kills)
+
+                                                        this.setState({
+                                                            mainData: mainData1,
+                                                            killsloader: false
+                                                        })
+                                                    }
+                                                }
+                                                this.setState({
+                                                    mainData: mainData
+                                                })
+                                                console.log(mainData1)
+                                            }
+                                        }}
+                                    />
+
+                                    <TextInput
+                                        style={{ width: Dimensions.get('screen').width / 7, height: 35, borderWidth: 0.5, borderRadius: 5, paddingLeft: 5, marginVertical: 5 }}
+                                        placeholder="Price"
+                                        onChangeText={data => {
+                                            if (data) {
+                                                this.setState({ killsloader: true })
+                                                var mainData1 = mainData;
+                                                for (var i = 0; i < mainData1.length; i++) {
+                                                    if (item.id === mainData1[i].id) {
+                                                        mainData1[i].winamount = data;
+
                                                         this.setState({
                                                             mainData: mainData1,
                                                             killsloader: false
@@ -106,19 +132,25 @@ export default class App extends React.Component {
                         </View>
                     )}
                 />
-                <Text style={{fontSize: 25,fontWeight:'bold',textAlign:'center'}}>Total: Rs.{this.state.total}</Text>
-                <View style={{ flexDirection: 'row',alignSelf:'center' }}>
+
+                <TextInput
+                    style={{ width: Dimensions.get('screen').width /1.8, height: 35, borderWidth: 0.5, borderRadius: 5, paddingLeft: 5, marginVertical: 5,alignSelf:'center' }}
+                    placeholder="Youtube link"
+                    onChangeText={data => this.setState({youtube: data})} />
+
+                <Text style={{ fontSize: 25, fontWeight: 'bold', textAlign: 'center' }}>Total: Rs.{this.state.total}</Text>
+                <View style={{ flexDirection: 'row', alignSelf: 'center' }}>
                     <TouchableOpacity onPress={this.calculatefunction} style={styles.bottombuttonadd}>
                         <Icon name="edit" color="#FFFF" size={20} />
                         <Text style={styles.cardtext}>Calculate</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={()=> {
+                    <TouchableOpacity onPress={() => {
                         var mainData1 = this.state.maindata;
                         var result = [];
                         result.length = 0;
                         for (var i = 0; i < mainData1.length; i++) {
-                            if(mainData1[i].kills > 0) {
-                                result.push({kills: mainData1[i].kills, id: mainData1[i].id, mid: mainData1[i].mid, cid: mainData1[i].cid, amount: parseInt(mainData1[i].kills * killamount)})
+                            if (mainData1[i].kills > 0) {
+                                result.push({ kills: mainData1[i].kills, id: mainData1[i].id, mid: mainData1[i].mid, cid: mainData1[i].cid, amount: parseInt(mainData1[i].kills * killamount) + parseInt(mainData1[i].winamount) })
                             }
                         }
                         this.finish(result);
@@ -204,6 +236,6 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-        marginHorizontal:5
+        marginHorizontal: 5
     }
 })
